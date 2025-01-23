@@ -1,0 +1,266 @@
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4rem 2rem;
+  gap: 3rem;
+  background-color: #1a1a1a;
+}
+
+.hero-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.hero-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #858584;
+  margin-bottom: 2rem;
+}
+
+.hero-image-container {
+  flex: 1;
+  background-color: #242424;
+  border-radius: 1rem;
+  padding: 1rem;
+  border: 1px solid #343434;
+}
+
+.hero-image {
+  margin-bottom: 1rem;
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  display: block;
+}
+
+.nft-info {
+  padding: 0.5rem;
+}
+
+.nft-info h3 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-icon {
+  font-size: 1.2rem;
+}
+
+.username {
+  color: #858584;
+  font-size: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.view-degree,
+.verify-certificate {
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.view-degree {
+  background: linear-gradient(to top, #A259FF, #613599);
+  color: white;
+  border: none;
+}
+
+.view-degree:hover {
+  background: linear-gradient(to top, #613599, #A259FF);
+  transform: translateY(-2px);
+}
+
+.verify-certificate {
+  background: transparent;
+  color: white;
+  border: 2px solid #A259FF;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.verify-certificate::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to top, #A259FF, #613599);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+.verify-certificate:hover::before {
+  opacity: 1;
+}
+
+.verify-certificate:hover {
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+/* Modal styling */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #858584;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: white;
+}
+
+.modal-content {
+  position: relative;
+  background-color: #3B3B3B;
+  padding: 2.5rem;
+  border-radius: 1.25rem;
+  width: 90%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  color: white;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.modal-subtitle {
+  color: #858584;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.token-input-container {
+  margin-bottom: 2rem;
+}
+
+.token-input {
+  width: 100%;
+  padding: 1rem;
+  background-color: #D9D9D933;
+  border: 1px solid #343434;
+  border-radius: 1.0rem;
+  color: white;
+  font-size: 1rem;
+}
+
+.token-input:focus {
+  outline: none;
+  border-color: #A259FF;
+}
+
+.token-input::placeholder {
+  color: #858584;
+}
+
+.view-degree-btn {
+  padding: 1rem;
+  background: linear-gradient(to top, #A259FF, #613599);
+  color: white;
+  border: none;
+  border-radius: 1.05rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.view-degree-btn:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    padding: 2rem 1rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .hero-content p {
+    font-size: 1rem;
+  }
+
+  .hero-image {
+    margin-top: 2rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .view-degree,
+  .verify-certificate {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+.feature-icon svg,
+.step-icon svg,
+.social-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.logo-icon svg {
+  width: 28px;
+  height: 28px;
+}

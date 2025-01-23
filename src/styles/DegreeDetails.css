@@ -1,0 +1,197 @@
+/* Import Space Grotesk font */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+.degree-details {
+  background-color: #1A1A1A;
+  min-height: 100vh;
+  color: white;
+  padding: 2rem;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.degree-image {
+  width: 100%;
+  height: 80vh;
+  position: relative;
+  overflow: hidden;
+  background-color: #242424;
+}
+
+.degree-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.degree-info-container {
+  padding: 2rem;
+}
+
+.degree-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.left-content {
+  flex: 1;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.mint-date {
+  color: #858584;
+  margin-bottom: 2rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+h2 {
+  color: #858584;
+  font-size: 1rem;
+  font-weight: normal;
+  margin-bottom: 1rem;
+}
+
+.university {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+
+
+.university img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.university span {
+  color: white;
+  font-size: 1rem;
+}
+
+.description {
+  color: white;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.highlight {
+  color: white;
+  font-weight: 500;
+}
+
+.congratulations {
+  color: white;
+  font-style: italic;
+  text-align: justify;
+  text-justify: inter-word;
+}
+
+.opensea-link {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.globe-icon {
+  font-size: 1.2rem;
+}
+
+.right-content {
+  width: 300px;
+}
+
+.auction-timer {
+  background-color: #242424;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.auction-timer p {
+  color: #858584;
+  margin-bottom: 1rem;
+}
+
+.timer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.time-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.time {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+}
+
+.label {
+  color: #858584;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.separator {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: -1rem;
+}
+
+.place-bid {
+  width: 100%;
+  background: linear-gradient(to right, #A259FF, #613599);
+  color: white;
+  border: none;
+  border-radius: 1.25rem;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.place-bid:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .degree-content {
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .right-content {
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+} 
