@@ -264,3 +264,25 @@
   width: 28px;
   height: 28px;
 }
+
+/* Add these to your Hero.css file */
+.input-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.token-input.error {
+  border-color: #ff4444;
+}
+
+.error-message {
+  color: #ff4444;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: left;
+}
+
+.view-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

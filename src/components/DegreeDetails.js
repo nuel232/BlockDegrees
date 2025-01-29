@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaGlobe } from 'react-icons/fa';
 import '../styles/DegreeDetails.css';
+import { BrowserProvider, Contract } from 'ethers';
+import DegreeToken from '../abi/anything.json';
 
 function DegreeDetails() {
   const { tokenId } = useParams();
@@ -10,6 +12,8 @@ function DegreeDetails() {
     minutes: 59,
     seconds: 59
   });
+  const [degreeMetadata, setDegreeMetadata] = useState(null);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,8 +35,31 @@ function DegreeDetails() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, []);
+    const fetchDegreeMetadata = async () => {
+      try {
+        // Connect to Ethereum provider
+        const provider = new BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+
+        // Create contract instance
+        const contractAddress = 'YOUR_CONTRACT_ADDRESS'; // Replace with your contract address
+        const contract = new Contract(contractAddress, DegreeToken.abi, signer);
+
+        // Fetch degree metadata
+        const metadata = await contract.getDegreeMetadata(tokenId);
+        setDegreeMetadata(metadata);
+      } catch (err) {
+        setError('Failed to fetch degree metadata. Please check the token ID.');
+        console.error(err);
+      }
+    };
+
+    fetchDegreeMetadata();
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, [tokenId]);
 
   const formatTime = (time) => {
     return time < 10 ? `0${time}` : time;
@@ -99,6 +126,14 @@ function DegreeDetails() {
           </div>
         </div>
       </div>
+
+      {error && <p>{error}</p>}
+      {degreeMetadata && (
+        <div>
+          <h3>Degree Metadata:</h3>
+          <p>{degreeMetadata}</p>
+        </div>
+      )}
     </div>
   );
 }

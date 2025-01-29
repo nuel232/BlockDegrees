@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes } from 'react-icons/fa';
+import { BrowserProvider, Contract, Interface } from 'ethers';
+import DegreeToken from '../abi/anything.json';
 import '../styles/Hero.css';
 
 function Hero() {
   const [tokenId, setTokenId] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef();
   const navigate = useNavigate();
 
@@ -25,15 +29,79 @@ function Hero() {
     };
   }, [showModal]);
 
-  const handleViewDegree = () => {
+  const checkTokenExists = async (tokenId) => {
+    if (!window.ethereum) {
+      setError('Please install MetaMask to verify tokens');
+      return false;
+    }
+
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      
+      // Make sure we're using the ABI array directly
+      const contractABI = Array.isArray(DegreeToken) ? DegreeToken : DegreeToken.abi;
+      
+      // Create interface first to ensure ABI is properly formatted
+      const contractInterface = new Interface(contractABI);
+      
+      const contract = new Contract(
+        '0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90',
+        contractInterface,
+        provider
+      );
+
+      // Try to get the metadata for the token
+      const metadata = await contract.getDegreeMetadata(tokenId);
+      
+      // If metadata exists and is not empty/null, token is valid
+      return metadata && metadata !== '';
+    } catch (error) {
+      console.error('Error checking token:', error);
+      // More specific error handling
+      if (error.message.includes('call revert exception')) {
+        setError('Token ID does not exist');
+      } else if (error.message.includes('invalid address')) {
+        setError('Invalid contract address');
+      } else {
+        setError('Error verifying token. Please try again.');
+      }
+      return false;
+    }
+  };
+
+  const handleViewDegree = async () => {
     if (tokenId.trim()) {
-      navigate(`/degree/${tokenId}`);
-      setShowModal(false);
+        try {
+            console.log("Token ID:", tokenId);
+            // Check if the token exists before fetching metadata
+            const exists = await checkTokenExists(tokenId);
+            if (!exists) {
+                setError('Token ID does not exist.');
+                return;
+            }
+
+            // Fetch degree metadata
+            const metadata = await checkTokenExists(tokenId);
+            if (!metadata) {
+                setError('No metadata found for this token ID.');
+                return;
+            }
+
+            navigate(`/degree/${tokenId}`); // Navigate to DegreeDetails page with tokenId
+            setShowModal(false);
+        } catch (error) {
+            console.error('Error checking token:', error);
+            setError('Error checking token. Please try again.');
+        }
+    } else {
+        setError('Please enter a token ID');
     }
   };
 
   const handleClose = () => {
     setShowModal(false);
+    setError('');
+    setTokenId('');
   };
 
   return (
@@ -78,14 +146,22 @@ function Hero() {
               <input 
                 type="text" 
                 value={tokenId}
-                onChange={(e) => setTokenId(e.target.value)}
+                onChange={(e) => {
+                  setTokenId(e.target.value);
+                  setError(''); // Clear error when user types
+                }}
                 placeholder="Enter Token ID"
-                className="token-input"
+                className={`token-input ${error ? 'error' : ''}`}
               />
+              {error && <div className="error-message">{error}</div>}
             </div>
 
-            <button className="view-degree-btn" onClick={handleViewDegree}>
-              View My Degree
+            <button 
+              className="view-degree-btn" 
+              onClick={handleViewDegree} 
+              disabled={isLoading}
+            >
+              {isLoading ? 'Verifying...' : 'View My Degree'}
             </button>
           </div>
         </div>
