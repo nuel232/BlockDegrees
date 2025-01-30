@@ -89,7 +89,7 @@ function Features() {
       // Generate metadata object for transcript
       const metadata = {
         name: `Official Academic Transcript - ${formData.studentName}`,
-        description: `This NFT serves as a unique and verifiable record of ${formData.studentName}'s academic accomplishments at Veritas University. It includes all courses completed, grades achieved, and the date of graduation. Stored on the blockchain for security and immutability. This NFT contains an academic transcript. View the full PDF [here](https://ipfs.io/ipfs/bafkreiagsumonuapp7quct6aptqoplvufwssthpwa7loozpboxrmuyv44q).`,
+        description: `This NFT serves as a unique and verifiable record of ${formData.studentName}'s academic accomplishments at Veritas University. It includes all courses completed, grades achieved, and the date of graduation. Stored on the blockchain for security and immutability. This NFT contains an academic transcript.`,
         image:
           "https://ipfs.io/ipfs/bafybeiecfkxzkbzonu53k7eb47fa7pelpj3rxmkqwyx3qof5yapofgcbqa",
         pdf: "https://ipfs.io/ipfs/bafkreiagsumonuapp7quct6aptqoplvufwssthpwa7loozpboxrmuyv44q",
@@ -144,7 +144,7 @@ function Features() {
       console.log("Contract instance created:", contract);
 
       // Call the contract's issueTranscript function (assuming it exists)
-      const tx = await contract.issueTranscript(
+      const tx = await contract.issueDegree(
         formData.address,
         formData.tokenId,
         metadataUri
