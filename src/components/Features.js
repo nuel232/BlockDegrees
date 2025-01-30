@@ -16,7 +16,13 @@ function Features() {
   const [formData, setFormData] = useState({
     address: "",
     tokenId: "",
-    metadata: "",
+    studentName: "",
+    matricNumber: "",
+    grade: "",
+    department: "",
+    faculty: "",
+    issueDate: "",
+    year: "",
   });
   const [revokeTokenId, setRevokeTokenId] = useState("");
   const [error, setError] = useState("");
@@ -64,6 +70,51 @@ function Features() {
       [name]: value,
     }));
     setError("");
+  };
+
+  const generateMetadata = () => {
+    const metadata = {
+      name: `Bachelor of Science in ${formData.department} - ${formData.studentName}`,
+      description: `This certifies that ${formData.studentName}, with Matriculation Number ${formData.matricNumber}, has successfully completed the prescribed course of study in ${formData.department} under the Faculty of ${formData.faculty} at Veritas University, Abuja, and has been duly awarded the degree of Bachelor of Science (B.Sc.) in accordance with the university's regulations. Congratulations on this academic achievement!`,
+      image:
+        "https://ipfs.io/ipfs/bafybeibukfbp4iqdc6la4zzkwrnblbkupbx4vzuqa3rgnokkrhdv6g7uji",
+      attributes: [
+        {
+          trait_type: "Degree Type",
+          value: "Undergraduate",
+        },
+        {
+          trait_type: "Student Name",
+          value: formData.studentName,
+        },
+        {
+          trait_type: "Matric Number",
+          value: formData.matricNumber,
+        },
+        {
+          trait_type: "Grade",
+          value: formData.grade,
+        },
+        {
+          trait_type: "Department",
+          value: formData.department,
+        },
+        {
+          trait_type: "Faculty",
+          value: formData.faculty,
+        },
+        {
+          trait_type: "Issue Date",
+          value: formData.issueDate,
+        },
+        {
+          trait_type: "Year",
+          value: formData.year,
+        },
+      ],
+    };
+
+    return JSON.stringify(metadata);
   };
 
   const handleRevoke = async (e) => {
@@ -117,7 +168,6 @@ function Features() {
     setIsLoading(true);
 
     try {
-      // Force reconnect to ensure we have a fresh signer
       const { signer } = await walletService.connectMetaMask();
 
       if (!signer) {
@@ -126,7 +176,11 @@ function Features() {
         );
       }
 
-      // Get contract instance with the fresh signer
+      const metadata = generateMetadata();
+      // Here you would typically upload the metadata to IPFS first
+      // and use the returned IPFS hash as the metadata URI
+      const metadataUri = "ipfs://YOUR_IPFS_HASH"; // Replace with actual IPFS upload
+
       const contract = await walletService.getContract(
         CONTRACT_ADDRESS,
         DegreeToken
@@ -134,34 +188,33 @@ function Features() {
 
       console.log("Contract instance created:", contract);
 
-      // Call the contract's issueDegree function
       const tx = await contract.issueDegree(
         formData.address,
         formData.tokenId,
-        formData.metadata
+        metadataUri
       );
 
       console.log("Transaction sent:", tx);
-
-      // Wait for transaction to be mined
       const receipt = await tx.wait();
       console.log("Transaction mined:", receipt);
 
-      // Reset form and close modal
       setShowIssueModal(false);
-      setFormData({ address: "", tokenId: "", metadata: "" });
+      setFormData({
+        address: "",
+        tokenId: "",
+        studentName: "",
+        matricNumber: "",
+        grade: "",
+        department: "",
+        faculty: "",
+        issueDate: "",
+        year: "",
+      });
 
-      // Show success message
       alert("Degree issued successfully!");
     } catch (err) {
       console.error("Error issuing degree:", err);
-      if (err.code === "ACTION_REJECTED") {
-        setError("Transaction was rejected by user");
-      } else if (err.message.includes("user rejected")) {
-        setError("You rejected the connection request");
-      } else {
-        setError(err.message || "Failed to issue degree. Please try again.");
-      }
+      setError(err.message || "Failed to issue degree. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -226,10 +279,79 @@ function Features() {
               <div className="form-group">
                 <input
                   type="text"
-                  name="metadata"
-                  value={formData.metadata}
+                  name="studentName"
+                  value={formData.studentName}
                   onChange={handleInputChange}
-                  placeholder="Metadata URI"
+                  placeholder="Student Name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="matricNumber"
+                  value={formData.matricNumber}
+                  onChange={handleInputChange}
+                  placeholder="Matriculation Number"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <select
+                  name="grade"
+                  value={formData.grade}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select Grade</option>
+                  <option value="First Class">First Class</option>
+                  <option value="Second Class Upper">Second Class Upper</option>
+                  <option value="Second Class Lower">Second Class Lower</option>
+                  <option value="Third Class">Third Class</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="Department"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="faculty"
+                  value={formData.faculty}
+                  onChange={handleInputChange}
+                  placeholder="Faculty"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="date"
+                  name="issueDate"
+                  value={formData.issueDate}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleInputChange}
+                  placeholder="Year"
                   required
                 />
               </div>

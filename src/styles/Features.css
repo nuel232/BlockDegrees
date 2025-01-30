@@ -129,3 +129,54 @@
   cursor: not-allowed;
   transform: none;
 }
+
+.form-group select {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #3B3B3B;
+  border-radius: 0.5rem;
+  background: #2B2B2B;
+  color: #858584;
+  font-size: 1rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  border-color: #A259FF;
+  outline: none;
+  color: white;
+}
+
+.form-group select option {
+  background: #2B2B2B;
+  color: white;
+  padding: 1rem;
+}
+
+.form-group select:not([value=""]) {
+  color: white;
+}
+
+.form-group select::-ms-expand {
+  display: none;
+}
+
+.form-group {
+  position: relative;
+}
+
+.form-group select {
+  padding-right: 2.5rem;
+}
+
+.form-group::after {
+  content: '▼';
+  font-size: 0.8rem;
+  color: #858584;
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
