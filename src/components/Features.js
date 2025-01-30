@@ -13,6 +13,7 @@ import "../styles/Features.css";
 function Features() {
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
+  const [showTranscriptModal, setShowTranscriptModal] = useState(false);
   const [formData, setFormData] = useState({
     address: "",
     tokenId: "",
@@ -56,6 +57,13 @@ function Features() {
       onClick: () => setShowIssueModal(true),
     },
     {
+      title: "Issue Transcript by Universities",
+      description:
+        "Universities can issue transcript to students and store them on the blockchain",
+      Icon: FaGraduationCap,
+      onClick: () => setShowTranscriptModal(true),
+    },
+    {
       title: "Revoke Degree by Universities",
       description: "Universities can revoke degrees from students",
       Icon: FaGraduationCap,
@@ -70,6 +78,109 @@ function Features() {
       [name]: value,
     }));
     setError("");
+  };
+
+  const handleTranscriptSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Generate metadata object for transcript
+      const metadata = {
+        name: `Official Academic Transcript - ${formData.studentName}`,
+        description: `This NFT serves as a unique and verifiable record of ${formData.studentName}'s academic accomplishments at Veritas University. It includes all courses completed, grades achieved, and the date of graduation. Stored on the blockchain for security and immutability. This NFT contains an academic transcript. View the full PDF [here](https://ipfs.io/ipfs/bafkreiagsumonuapp7quct6aptqoplvufwssthpwa7loozpboxrmuyv44q).`,
+        image:
+          "https://ipfs.io/ipfs/bafybeiecfkxzkbzonu53k7eb47fa7pelpj3rxmkqwyx3qof5yapofgcbqa",
+        pdf: "https://ipfs.io/ipfs/bafkreiagsumonuapp7quct6aptqoplvufwssthpwa7loozpboxrmuyv44q",
+        attributes: [
+          {
+            trait_type: "Student Name",
+            value: formData.studentName,
+          },
+          {
+            trait_type: "Matric Number",
+            value: formData.matricNumber,
+          },
+          {
+            trait_type: "Department",
+            value: formData.department,
+          },
+          {
+            trait_type: "Faculty",
+            value: formData.faculty,
+          },
+          {
+            trait_type: "Issue Date",
+            value: formData.issueDate,
+          },
+          {
+            trait_type: "Year",
+            value: formData.year,
+          },
+        ],
+      };
+
+      // Convert metadata to URI format
+      const metadataUri = `data:application/json;base64,${btoa(
+        JSON.stringify(metadata)
+      )}`;
+      console.log("Transcript Metadata URI:", metadataUri);
+
+      // Get contract instance
+      const { signer } = await walletService.connectMetaMask();
+
+      if (!signer) {
+        throw new Error(
+          "Failed to get signer. Please try reconnecting your wallet."
+        );
+      }
+
+      const contract = await walletService.getContract(
+        CONTRACT_ADDRESS,
+        DegreeToken
+      );
+
+      console.log("Contract instance created:", contract);
+
+      // Call the contract's issueTranscript function (assuming it exists)
+      const tx = await contract.issueTranscript(
+        formData.address,
+        formData.tokenId,
+        metadataUri
+      );
+
+      console.log("Transaction sent:", tx);
+      const receipt = await tx.wait();
+      console.log("Transaction mined:", receipt);
+
+      setShowTranscriptModal(false);
+      setFormData({
+        address: "",
+        tokenId: "",
+        studentName: "",
+        matricNumber: "",
+        department: "",
+        faculty: "",
+        issueDate: "",
+        year: "",
+      });
+
+      alert("Transcript issued successfully!");
+    } catch (err) {
+      console.error("Error issuing transcript:", err);
+      if (err.code === "ACTION_REJECTED") {
+        setError("Transaction was rejected by user");
+      } else if (err.message.includes("user rejected")) {
+        setError("You rejected the connection request");
+      } else {
+        setError(
+          err.message || "Failed to issue transcript. Please try again."
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRevoke = async (e) => {
@@ -404,6 +515,120 @@ function Features() {
                 disabled={isLoading}
               >
                 {isLoading ? "Revoking..." : "Revoke Degree"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showTranscriptModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <button
+              className="close-button"
+              onClick={() => setShowTranscriptModal(false)}
+            >
+              <FaTimes />
+            </button>
+            <h2>Issue New Transcript</h2>
+            <p>Enter the details to issue a new transcript NFT</p>
+
+            <form onSubmit={handleTranscriptSubmit} className="issue-form">
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Student Wallet Address"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="tokenId"
+                  value={formData.tokenId}
+                  onChange={handleInputChange}
+                  placeholder="Token ID"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="studentName"
+                  value={formData.studentName}
+                  onChange={handleInputChange}
+                  placeholder="Student Name"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="matricNumber"
+                  value={formData.matricNumber}
+                  onChange={handleInputChange}
+                  placeholder="Matriculation Number"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="Department"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="faculty"
+                  value={formData.faculty}
+                  onChange={handleInputChange}
+                  placeholder="Faculty"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="date"
+                  name="issueDate"
+                  value={formData.issueDate}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <input
+                  type="text"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleInputChange}
+                  placeholder="Year"
+                  required
+                />
+              </div>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Issuing..." : "Issue Transcript"}
               </button>
             </form>
           </div>
