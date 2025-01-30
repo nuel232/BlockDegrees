@@ -11,12 +11,14 @@ import DegreeToken from "../abi/degree.json";
 import "../styles/Features.css";
 
 function Features() {
-  const [showModal, setShowModal] = useState(false);
+  const [showIssueModal, setShowIssueModal] = useState(false);
+  const [showRevokeModal, setShowRevokeModal] = useState(false);
   const [formData, setFormData] = useState({
     address: "",
     tokenId: "",
     metadata: "",
   });
+  const [revokeTokenId, setRevokeTokenId] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +47,13 @@ function Features() {
       description:
         "Universities can issue degrees to students and store them on the blockchain",
       Icon: FaGraduationCap,
-      onClick: () => setShowModal(true),
+      onClick: () => setShowIssueModal(true),
+    },
+    {
+      title: "Revoke Degree by Universities",
+      description: "Universities can revoke degrees from students",
+      Icon: FaGraduationCap,
+      onClick: () => setShowRevokeModal(true),
     },
   ];
 
@@ -56,6 +64,51 @@ function Features() {
       [name]: value,
     }));
     setError("");
+  };
+
+  const handleRevoke = async (e) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const { signer } = await walletService.connectMetaMask();
+
+      if (!signer) {
+        throw new Error(
+          "Failed to get signer. Please try reconnecting your wallet."
+        );
+      }
+
+      const contract = await walletService.getContract(
+        CONTRACT_ADDRESS,
+        DegreeToken
+      );
+
+      console.log("Contract instance created:", contract);
+
+      // Call the contract's revokeDegree function
+      const tx = await contract.revokeDegree(revokeTokenId);
+      console.log("Transaction sent:", tx);
+
+      const receipt = await tx.wait();
+      console.log("Transaction mined:", receipt);
+
+      setShowRevokeModal(false);
+      setRevokeTokenId("");
+      alert("Degree revoked successfully!");
+    } catch (err) {
+      console.error("Error revoking degree:", err);
+      if (err.code === "ACTION_REJECTED") {
+        setError("Transaction was rejected by user");
+      } else if (err.message.includes("user rejected")) {
+        setError("You rejected the connection request");
+      } else {
+        setError(err.message || "Failed to revoke degree. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -95,7 +148,7 @@ function Features() {
       console.log("Transaction mined:", receipt);
 
       // Reset form and close modal
-      setShowModal(false);
+      setShowIssueModal(false);
       setFormData({ address: "", tokenId: "", metadata: "" });
 
       // Show success message
@@ -135,12 +188,12 @@ function Features() {
         })}
       </div>
 
-      {showModal && (
+      {showIssueModal && (
         <div className="modal">
           <div className="modal-content">
             <button
               className="close-button"
-              onClick={() => setShowModal(false)}
+              onClick={() => setShowIssueModal(false)}
             >
               <FaTimes />
             </button>
@@ -189,6 +242,46 @@ function Features() {
                 disabled={isLoading}
               >
                 {isLoading ? "Issuing..." : "Issue Degree"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRevokeModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <button
+              className="close-button"
+              onClick={() => setShowRevokeModal(false)}
+            >
+              <FaTimes />
+            </button>
+            <h2>Revoke Degree</h2>
+            <p>Enter the Token ID of the degree to revoke</p>
+
+            <form onSubmit={handleRevoke} className="revoke-form">
+              <div className="form-group">
+                <input
+                  type="text"
+                  value={revokeTokenId}
+                  onChange={(e) => {
+                    setRevokeTokenId(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Token ID"
+                  required
+                />
+              </div>
+
+              {error && <div className="error-message">{error}</div>}
+
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={isLoading}
+              >
+                {isLoading ? "Revoking..." : "Revoke Degree"}
               </button>
             </form>
           </div>
