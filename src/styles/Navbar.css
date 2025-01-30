@@ -54,6 +54,46 @@
   color: #A259FF;
 }
 
+.wallet-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.disconnect-wallet-btn {
+  background: transparent;
+  color: #ff4444;
+  border: 1px solid #ff4444;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.disconnect-wallet-btn:hover {
+  background: #ff4444;
+  color: white;
+}
+
+.disconnect-wallet-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wallet-error {
+  position: absolute;
+  top: 100%;
+  right: 2rem;
+  background: #ff4444;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  z-index: 100;
+}
+
 .wallet-info {
   display: flex;
   align-items: center;
@@ -100,7 +140,83 @@
   color: white;
 }
 
-.connect-wallet:disabled {
-  opacity: 0.7;
+.connect-wallet:disabled,
+.disconnect-wallet-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+}
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1a1a;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  width: 90%;
+  max-width: 320px;
+  border: 1px solid rgba(162, 89, 255, 0.2);
+}
+
+.mobile-menu.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.mobile-menu .nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.mobile-menu .nav-links li {
+  width: 100%;
+}
+
+.mobile-menu .nav-links a {
+  display: block;
+  padding: 1rem;
+  width: 100%;
+  text-align: center;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  background: rgba(162, 89, 255, 0.05);
+}
+
+.mobile-menu .nav-links a:hover {
+  background: rgba(162, 89, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Overlay background */
+.menu-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.menu-overlay.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

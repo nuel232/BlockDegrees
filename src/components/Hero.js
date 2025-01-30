@@ -1,22 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaEthereum, FaCheckCircle } from "react-icons/fa";
 import { BrowserProvider, Contract, Interface } from "ethers";
 import DegreeToken from "../abi/degree.json";
 import "../styles/Hero.css";
 
-function Hero({ isWalletConnected, connectWallet }) {
+function Hero() {
   const [tokenId, setTokenId] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef();
   const navigate = useNavigate();
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verificationResult, setVerificationResult] = useState(null);
+  const verifyModalRef = useRef();
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setShowModal(false);
+        handleClose();
       }
     };
 
@@ -29,92 +33,141 @@ function Hero({ isWalletConnected, connectWallet }) {
     };
   }, [showModal]);
 
-  const checkTokenExists = async (tokenId) => {
-    if (!window.ethereum) {
-      setError("Please install MetaMask to verify tokens");
-      return false;
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        verifyModalRef.current &&
+        !verifyModalRef.current.contains(event.target)
+      ) {
+        handleVerifyClose();
+      }
+    };
+
+    if (showVerifyModal) {
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
-    try {
-      const provider = new BrowserProvider(window.ethereum);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showVerifyModal]);
 
-      // Make sure we're using the ABI array directly
+  const handleViewDegreeClick = () => {
+    setShowModal(true);
+    setError("");
+  };
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowModal(false);
+      setIsClosing(false);
+      setError("");
+      setTokenId("");
+    }, 300);
+  };
+
+  const handleVerifyClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setShowVerifyModal(false);
+      setVerificationResult(null);
+      setError("");
+      setIsClosing(false);
+    }, 300);
+  };
+
+  const handleVerifyCertificate = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const tokenId = e.target.verifyTokenId.value;
+      const provider = new BrowserProvider(window.ethereum);
       const contractABI = Array.isArray(DegreeToken)
         ? DegreeToken
         : DegreeToken.abi;
-
-      // Create interface first to ensure ABI is properly formatted
       const contractInterface = new Interface(contractABI);
 
       const contract = new Contract(
-        "0xefd592f2EB7806c7ecfD9E5019043AC4412107E9",
+        "0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90",
         contractInterface,
         provider
       );
 
-      // Try to get the metadata for the token
-      const metadata = await contract.getDegreeMetadata(tokenId);
-
-      // If metadata exists and is not empty/null, token is valid
-      return metadata && metadata !== "";
-    } catch (error) {
-      console.error("Error checking token:", error);
-      // More specific error handling
-      if (error.message.includes("call revert exception")) {
-        setError("Token ID does not exist");
-      } else if (error.message.includes("invalid address")) {
-        setError("Invalid contract address");
-      } else {
-        setError("Error verifying token. Please try again.");
+      try {
+        await contract.ownerOf(tokenId);
+        const metadata = await contract.tokenURI(tokenId);
+        setVerificationResult(metadata);
+      } catch (contractError) {
+        if (contractError.message.includes("ERC721NonexistentToken")) {
+          setError(
+            "This certificate ID does not exist. Please check the ID and try again."
+          );
+        } else if (contractError.message.includes("NotOwner")) {
+          setError(
+            "You are not authorized to view this certificate's details."
+          );
+        } else {
+          setError("Error verifying certificate. Please try again.");
+        }
+        console.error("Contract error:", contractError);
       }
-      return false;
+    } catch (error) {
+      setError(
+        "Error connecting to blockchain. Please ensure your wallet is connected."
+      );
+      console.error("Verification error:", error);
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const handleViewDegreeClick = () => {
-    if (!isWalletConnected) {
-      // Show connect wallet message instead of opening modal
-      setError("Please connect your wallet first");
-      connectWallet(); // Attempt to connect wallet
-      return;
-    }
-    setShowModal(true);
-    setError(""); // Clear any previous errors
   };
 
   const handleViewDegree = async () => {
-    if (tokenId.trim()) {
-      try {
-        console.log("Token ID:", tokenId);
-        // Check if the token exists before fetching metadata
-        const exists = await checkTokenExists(tokenId);
-        if (!exists) {
-          setError("Token ID does not exist.");
-          return;
-        }
-
-        // Fetch degree metadata
-        const metadata = await checkTokenExists(tokenId);
-        if (!metadata) {
-          setError("No metadata found for this token ID.");
-          return;
-        }
-
-        navigate(`/degree/${tokenId}`); // Navigate to DegreeDetails page with tokenId
-        setShowModal(false);
-      } catch (error) {
-        console.error("Error checking token:", error);
-        setError("Error checking token. Please try again.");
-      }
-    } else {
+    if (!tokenId.trim()) {
       setError("Please enter a token ID");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const provider = new BrowserProvider(window.ethereum);
+      const contractABI = Array.isArray(DegreeToken)
+        ? DegreeToken
+        : DegreeToken.abi;
+      const contractInterface = new Interface(contractABI);
+
+      const contract = new Contract(
+        "0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90",
+        contractInterface,
+        provider
+      );
+
+      const metadata = await contract.tokenURI(tokenId);
+      if (metadata) {
+        navigate(`/degree/${tokenId}`);
+        handleClose();
+      } else {
+        setError("No degree found for this token ID");
+      }
+    } catch (error) {
+      console.error("Error viewing degree:", error);
+      setError(
+        "Error viewing degree. Please check the token ID and try again."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setShowModal(false);
-    setError("");
-    setTokenId("");
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleViewDegree();
+    }
   };
 
   return (
@@ -128,11 +181,14 @@ function Hero({ isWalletConnected, connectWallet }) {
 
         <div className="action-buttons">
           <button className="view-degree" onClick={handleViewDegreeClick}>
-            {!isWalletConnected
-              ? "Connect Wallet to View Degree"
-              : "View My Degree"}
+            View My Degree
           </button>
-          <button className="verify-certificate">Verify a Certificate</button>
+          <button
+            className="verify-certificate"
+            onClick={() => setShowVerifyModal(true)}
+          >
+            Verify a Certificate
+          </button>
         </div>
       </div>
 
@@ -152,15 +208,15 @@ function Hero({ isWalletConnected, connectWallet }) {
         </div>
       </div>
 
-      {showModal && isWalletConnected && (
-        <div className="modal">
+      {showModal && (
+        <div className={`modal ${isClosing ? "closing" : ""}`}>
           <div className="modal-content" ref={modalRef}>
             <button className="close-button" onClick={handleClose}>
               <FaTimes />
             </button>
-            <h2>Each Certificate Is Linked To A Unique Token ID.</h2>
+            <h2>Enter Your Certificate Token ID</h2>
             <p className="modal-subtitle">
-              Please Provide Your Token ID To Access Your Certificate.
+              Please provide your token ID to access your certificate.
             </p>
 
             <div className="token-input-container">
@@ -169,8 +225,9 @@ function Hero({ isWalletConnected, connectWallet }) {
                 value={tokenId}
                 onChange={(e) => {
                   setTokenId(e.target.value);
-                  setError(""); // Clear error when user types
+                  setError("");
                 }}
+                onKeyPress={handleKeyPress}
                 placeholder="Enter Token ID"
                 className={`token-input ${error ? "error" : ""}`}
               />
@@ -182,13 +239,81 @@ function Hero({ isWalletConnected, connectWallet }) {
               onClick={handleViewDegree}
               disabled={isLoading}
             >
-              {isLoading ? "Verifying..." : "View My Degree"}
+              {isLoading ? "Loading..." : "View My Degree"}
             </button>
           </div>
         </div>
       )}
 
-      {error && !showModal && <div className="error-toast">{error}</div>}
+      {showVerifyModal && (
+        <div className={`modal ${isClosing ? "closing" : ""}`}>
+          <div className="modal-content" ref={verifyModalRef}>
+            <button className="close-button" onClick={handleVerifyClose}>
+              <FaTimes />
+            </button>
+
+            <h2>Verify Academic Certificate</h2>
+            <p className="modal-subtitle">
+              Enter the certificate's Token ID to verify its authenticity
+            </p>
+
+            {!verificationResult ? (
+              <form onSubmit={handleVerifyCertificate}>
+                <div className="token-input-container">
+                  <input
+                    type="number"
+                    name="verifyTokenId"
+                    placeholder="Enter Token ID"
+                    className={`token-input ${error ? "error" : ""}`}
+                    required
+                  />
+                  {error && <div className="error-message">{error}</div>}
+                </div>
+
+                <button
+                  type="submit"
+                  className="verify-btn"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Verifying..." : "Verify Certificate"}
+                </button>
+              </form>
+            ) : (
+              <div className="verification-result">
+                <div className="success-icon">
+                  <FaCheckCircle className="check-icon" />
+                </div>
+                <h3>Certificate Verified!</h3>
+                <div className="metadata-display">
+                  <p>Certificate Details:</p>
+                  <pre>{JSON.stringify(verificationResult, null, 2)}</pre>
+                </div>
+                <div className="action-buttons">
+                  <button
+                    onClick={() => navigate(`/degree/${tokenId}`)}
+                    className="view-details-btn"
+                  >
+                    View Full Details
+                  </button>
+                  <button
+                    onClick={() => {
+                      setVerificationResult(null);
+                      setError("");
+                    }}
+                    className="verify-another-btn"
+                  >
+                    Verify Another
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {error && !showModal && !showVerifyModal && (
+        <div className="error-toast">{error}</div>
+      )}
     </div>
   );
 }

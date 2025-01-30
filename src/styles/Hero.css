@@ -1,3 +1,4 @@
+/* Hero Section */
 .hero {
   display: flex;
   align-items: center;
@@ -73,7 +74,7 @@
 
 .action-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
@@ -86,6 +87,8 @@
   font-size: 1rem;
   font-weight: 600;
   transition: all 0.3s ease;
+  min-width: 180px;
+  text-align: center;
 }
 
 .view-degree {
@@ -130,74 +133,109 @@
   transform: translateY(-2px);
 }
 
-/* Modal styling */
+/* Modal */
 .modal {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
+  inset: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgba(0, 0, 0, 0.8);
   z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #3B3B3B;
+  padding: 2rem;
+  border-radius: 1.25rem;
+  width: 90%;
+  max-width: 480px;
+  position: relative;
+  text-align: center;
+  transform: scale(0.9);
+  opacity: 0;
+  animation: modalContentZoomIn 0.3s ease-out 0.1s forwards;
 }
 
 .close-button {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: none;
+  padding: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   border: none;
+  background: none;
   color: #858584;
   cursor: pointer;
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .close-button:hover {
   color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: rotate(90deg);
 }
 
-.modal-content {
-  position: relative;
-  background-color: #3B3B3B;
-  padding: 2.5rem;
-  border-radius: 1.25rem;
-  width: 90%;
-  max-width: 480px;
-  text-align: center;
+/* Animations */
+@keyframes modalBackgroundFadeIn {
+  to { background-color: rgba(0, 0, 0, 0.8); }
 }
 
-.modal-content h2 {
-  color: white;
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
+@keyframes modalContentZoomIn {
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.modal-subtitle {
-  color: #858584;
-  font-size: 1rem;
-  margin-bottom: 2rem;
+.modal.closing {
+  animation: modalBackgroundFadeOut 0.3s ease forwards;
 }
 
+.modal.closing .modal-content {
+  animation: modalContentZoomOut 0.3s ease forwards;
+}
+
+@keyframes modalBackgroundFadeOut {
+  to { background-color: rgba(0, 0, 0, 0); }
+}
+
+@keyframes modalContentZoomOut {
+  to {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Form Elements */
 .token-input-container {
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .token-input {
   width: 100%;
   padding: 1rem;
-  background-color: #D9D9D933;
-  border: 1px solid #343434;
-  border-radius: 1.0rem;
+  border: 2px solid #3B3B3B;
+  border-radius: 0.5rem;
+  background: #2B2B2B;
   color: white;
   font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Remove spinners for number input */
+.token-input::-webkit-outer-spin-button,
+.token-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* For Firefox */
+.token-input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 .token-input:focus {
@@ -205,26 +243,40 @@
   border-color: #A259FF;
 }
 
-.token-input::placeholder {
-  color: #858584;
+.error-message {
+  color: #ff4444;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: left;
 }
 
+/* Buttons */
+.verify-btn,
 .view-degree-btn {
+  width: 100%;
   padding: 1rem;
+  border-radius: 0.5rem;
   background: linear-gradient(to top, #A259FF, #613599);
   color: white;
   border: none;
-  border-radius: 1.05rem;
-  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.3s ease;
 }
 
+.verify-btn:hover,
 .view-degree-btn:hover {
   transform: translateY(-2px);
 }
 
+.verify-btn:disabled,
+.view-degree-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Media Queries */
 @media (max-width: 768px) {
   .hero {
     flex-direction: column;
@@ -253,18 +305,36 @@
     width: 100%;
     max-width: 300px;
   }
+
+  .modal {
+    align-items: center;  /* Ensure vertical centering */
+    padding: 1rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 400px;
+    margin: auto;
+    padding: 1.5rem;
+  }
 }
 
-.feature-icon svg,
-.step-icon svg,
-.social-icon svg {
-  width: 24px;
-  height: 24px;
-}
+@media (max-width: 480px) {
+  .action-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
 
-.logo-icon svg {
-  width: 28px;
-  height: 28px;
+  .view-degree,
+  .verify-certificate {
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 350px;
+    padding: 1.25rem;
+  }
 }
 
 /* Add these to your Hero.css file */
@@ -275,50 +345,6 @@
 
 .token-input.error {
   border-color: #ff4444;
-}
-
-.error-message {
-  color: #ff4444;
-  font-size: 14px;
-  margin-top: 5px;
-  text-align: left;
-}
-
-.view-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.connect-wallet-btn {
-  padding: 1rem 2rem;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  background: linear-gradient(to top, #A259FF, #613599);
-  color: white;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.connect-wallet-btn:hover {
-  background: linear-gradient(to top, #613599, #A259FF);
-  transform: translateY(-2px);
-}
-
-.connect-wallet-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.wallet-info {
-  padding: 0.5rem 1rem;
-  background: rgba(162, 89, 255, 0.1);
-  border-radius: 0.5rem;
-  color: #A259FF;
-  font-size: 0.9rem;
-  margin-top: 1rem;
 }
 
 .error-toast {
@@ -343,4 +369,162 @@
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+
+.verification-result {
+  text-align: center;
+  padding: 1rem;
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.check-icon {
+  font-size: 2.5rem;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  animation: scaleIn 0.5s ease-out;
+}
+
+.success-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 1.5rem auto;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A259FF 0%, #613599 100%);
+  box-shadow: 0 10px 20px rgba(162, 89, 255, 0.2);
+  position: relative;
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+.success-icon::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(162, 89, 255, 0.2), rgba(97, 53, 153, 0.2));
+  z-index: -1;
+  animation: rotateBorder 4s linear infinite;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 10px 20px rgba(162, 89, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 15px 30px rgba(162, 89, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 10px 20px rgba(162, 89, 255, 0.2);
+  }
+}
+
+@keyframes rotateBorder {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.metadata-display {
+  background: #2a2a2a;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.metadata-display pre {
+  color: #a0a0a0;
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.verify-btn {
+  background: linear-gradient(to top, #A259FF, #613599);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 1rem 2rem;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.verify-btn:hover {
+  transform: translateY(-2px);
+}
+
+.verify-btn:disabled {
+  background: #4a4a4a;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.view-details-btn,
+.verify-another-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-details-btn {
+  background: linear-gradient(to top, #A259FF, #613599);
+  color: white;
+  border: none;
+}
+
+.verify-another-btn {
+  background: transparent;
+  color: white;
+  border: 2px solid #A259FF;
+}
+
+.view-details-btn:hover,
+.verify-another-btn:hover {
+  transform: translateY(-2px);
 }

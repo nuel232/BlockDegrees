@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCube, FaFacebook, FaLinkedin, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaCube, FaFacebook, FaLinkedin, FaTwitter, FaInstagram,FaGraduationCap } from 'react-icons/fa';
 import '../styles/Footer.css';
 
 function Footer() {
@@ -8,7 +8,9 @@ function Footer() {
       <div className="footer-content">
         <div className="footer-section">
           <div className="logo-section">
-            <FaCube className="logo-icon" />
+            <div className="logo-icon-container">
+              <FaGraduationCap className="logo-icon" />
+            </div>
             <h3>BlockDegrees</h3>
           </div>
           <p>Blockchain-powered certificate verification interface</p>

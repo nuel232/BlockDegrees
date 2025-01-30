@@ -1,140 +1,235 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaGlobe } from 'react-icons/fa';
-import '../styles/DegreeDetails.css';
-import { BrowserProvider, Contract } from 'ethers';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { FaGlobe } from "react-icons/fa";
+import "../styles/DegreeDetails.css";
+import { BrowserProvider, Contract, Interface } from "ethers";
 import DegreeToken from "../abi/degree.json";
+
 function DegreeDetails() {
   const { tokenId } = useParams();
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 59,
-    minutes: 59,
-    seconds: 59
-  });
-  const [degreeMetadata, setDegreeMetadata] = useState(null);
-  const [error, setError] = useState('');
+  const [metadata, setMetadata] = useState(null);
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [contractAddress, setContractAddress] = useState("");
+
+  const getIPFSUrl = (ipfsUri) => {
+    if (!ipfsUri) return "";
+    // Replace ipfs:// with IPFS gateway URL
+    return ipfsUri.replace("ipfs://", "https://ipfs.io/ipfs/");
+  };
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => {
-        const newSeconds = prevTime.seconds - 1;
-        const newMinutes = newSeconds < 0 ? prevTime.minutes - 1 : prevTime.minutes;
-        const newHours = newMinutes < 0 ? prevTime.hours - 1 : prevTime.hours;
-
-        if (newHours < 0) {
-          clearInterval(timer);
-          return { hours: 0, minutes: 0, seconds: 0 };
-        }
-
-        return {
-          hours: newHours,
-          minutes: newMinutes < 0 ? 59 : newMinutes,
-          seconds: newSeconds < 0 ? 59 : newSeconds
-        };
-      });
-    }, 1000);
-
     const fetchDegreeMetadata = async () => {
+      setIsLoading(true);
+      setError("");
+
       try {
-        // Connect to Ethereum provider
         const provider = new BrowserProvider(window.ethereum);
-        const signer = await provider.getSigner();
+        const contractABI = Array.isArray(DegreeToken)
+          ? DegreeToken
+          : DegreeToken.abi;
+        const contractInterface = new Interface(contractABI);
 
-        // Create contract instance
-        const contractAddress = '0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90'; // Replace with your contract address
-        const contract = new Contract(contractAddress, DegreeToken.abi, signer);
+        const contract = new Contract(
+          "0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90",
+          contractInterface,
+          provider
+        );
 
-        // Fetch degree metadata
-        const metadata = await contract.getDegreeMetadata(tokenId);
-        setDegreeMetadata(metadata);
-      } catch (err) {
-        setError('Failed to fetch degree metadata. Please check the token ID.');
-        console.error(err);
+        // Store contract address
+        setContractAddress(contract.target);
+
+        try {
+          await contract.ownerOf(tokenId);
+          const metadataURI = await contract.tokenURI(tokenId);
+
+          // Convert IPFS URI to HTTP URL
+          const httpUrl = getIPFSUrl(metadataURI);
+
+          // Fetch and parse the JSON metadata
+          const response = await fetch(httpUrl);
+          if (!response.ok) {
+            throw new Error("Failed to fetch metadata");
+          }
+
+          const jsonMetadata = await response.json();
+
+          // Convert any IPFS image URLs in the metadata
+          if (jsonMetadata.image && jsonMetadata.image.startsWith("ipfs://")) {
+            jsonMetadata.image = getIPFSUrl(jsonMetadata.image);
+          }
+
+          setMetadata(jsonMetadata);
+        } catch (contractError) {
+          if (contractError.message.includes("ERC721NonexistentToken")) {
+            setError(
+              "This degree certificate does not exist. Please check the token ID."
+            );
+          } else if (contractError.message.includes("NotOwner")) {
+            setError(
+              "You are not authorized to view this certificate's details."
+            );
+          } else {
+            setError("Error fetching degree details. Please try again.");
+          }
+          console.error("Contract error:", contractError);
+        }
+      } catch (error) {
+        setError(
+          "Error connecting to blockchain. Please ensure your wallet is connected."
+        );
+        console.error("Fetch error:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchDegreeMetadata();
-
-    return () => {
-      clearInterval(timer);
-    };
+    if (tokenId) {
+      fetchDegreeMetadata();
+    }
   }, [tokenId]);
 
-  const formatTime = (time) => {
-    return time < 10 ? `0${time}` : time;
+  if (isLoading) {
+    return (
+      <div className="degree-details loading">
+        <div className="loading-spinner"></div>
+        <p>Loading degree details...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="degree-details error">
+        <div className="error-container">
+          <h2>Error</h2>
+          <p>{error}</p>
+          <button onClick={() => window.history.back()} className="back-button">
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!metadata) {
+    return (
+      <div className="degree-details error">
+        <div className="error-container">
+          <h2>No Data Found</h2>
+          <p>No degree metadata found for this token ID.</p>
+          <button onClick={() => window.history.back()} className="back-button">
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper function to get attribute value
+  const getAttribute = (traitType) => {
+    return (
+      metadata.attributes.find((attr) => attr.trait_type === traitType)
+        ?.value || ""
+    );
   };
 
   return (
     <div className="degree-details">
       <div className="degree-image">
-        <img src="/degree-nft.png" alt="Graduation Cap on Book" />
+        <img src={metadata.image} alt="Graduation Cap on Book" />
       </div>
 
       <div className="degree-content">
         <div className="left-content">
-          <h1>Bachelor Of Science In Computer Science</h1>
-          <p className="mint-date">Minted On January 11, 2025</p>
+          <h1>{metadata.name}</h1>
+          <p className="mint-date">
+            Issue Date:{" "}
+            {new Date(getAttribute("Issue Date")).toLocaleDateString()}
+          </p>
 
           <div className="section">
             <h2>Created By</h2>
             <div className="university">
-            <img src="/veritas-logo.jpg" alt="Veritas University" />
-            <span>Veritas University Abuja</span>
+              <img src="/veritas-logo.jpg" alt="Veritas University" />
+              <span>Veritas University Abuja</span>
             </div>
           </div>
 
           <div className="section">
             <h2>Description</h2>
-            <p className="description">
-              This certifies that <span className="highlight">John Doe</span>, with Matriculation Number <span className="highlight">VUC/CSC/21/5100</span>, has successfully completed the prescribed course of study in Computer Science under the Faculty of Natural and Applied Sciences at Veritas University, Abuja, and has been duly awarded the degree of Bachelor of Science (B.Sc.) in accordance with the university's regulations. This degree represents the successful completion of a rigorous academic program that includes comprehensive study in computer programming, software development, database management, artificial intelligence, and other key areas of computer science. The recipient has demonstrated exceptional academic performance and practical skills throughout the program.
-            </p>
+            <p className="description">{metadata.description}</p>
             <p className="congratulations">
-              Congratulations on this academic achievement! This NFT serves as an immutable record of your educational accomplishment.
+              Congratulations on this academic achievement! This NFT serves as
+              an immutable record of your educational accomplishment.
             </p>
           </div>
 
           <div className="section">
-            <h2>Details</h2>
-            <div className="opensea-link">
-              <FaGlobe className="globe-icon" />
-              <span>View on OpenSea</span>
+            <h2>Certificate Details</h2>
+            <div className="attributes-grid">
+              <div className="attribute">
+                <span className="attribute-trait">Student Name</span>
+                <span className="attribute-value">
+                  {getAttribute("Student Name")}
+                </span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Matric Number</span>
+                <span className="attribute-value">
+                  {getAttribute("Matric Number")}
+                </span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Grade</span>
+                <span className="attribute-value">{getAttribute("Grade")}</span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Department</span>
+                <span className="attribute-value">
+                  {getAttribute("Department")}
+                </span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Faculty</span>
+                <span className="attribute-value">
+                  {getAttribute("Faculty")}
+                </span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Degree Type</span>
+                <span className="attribute-value">
+                  {getAttribute("Degree Type")}
+                </span>
+              </div>
+              <div className="attribute">
+                <span className="attribute-trait">Year</span>
+                <span className="attribute-value">{getAttribute("Year")}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="right-content">
-          <div className="auction-timer">
-            <p>Auction ends in:</p>
-            <div className="timer">
-              <div className="time-block">
-                <span className="time">{formatTime(timeLeft.hours)}</span>
-                <span className="label">Hours</span>
-              </div>
-              <span className="separator">:</span>
-              <div className="time-block">
-                <span className="time">{formatTime(timeLeft.minutes)}</span>
-                <span className="label">Minutes</span>
-              </div>
-              <span className="separator">:</span>
-              <div className="time-block">
-                <span className="time">{formatTime(timeLeft.seconds)}</span>
-                <span className="label">Seconds</span>
-              </div>
+          <div className="section">
+            <h2>View On Chain</h2>
+            <div className="opensea-link">
+              <FaGlobe className="globe-icon" />
+              <a
+                href={`https://testnets.opensea.io/assets/sepolia/${contractAddress}/${tokenId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View on OpenSea
+              </a>
             </div>
-            <button className="place-bid">Place Bid</button>
           </div>
         </div>
       </div>
 
-      {error && <p>{error}</p>}
-      {degreeMetadata && (
-        <div>
-          <h3>Degree Metadata:</h3>
-          <p>{degreeMetadata}</p>
-        </div>
-      )}
+      <button onClick={() => window.history.back()} className="back-button">
+        Go Back
+      </button>
     </div>
   );
 }
 
-export default DegreeDetails; 
+export default DegreeDetails;
