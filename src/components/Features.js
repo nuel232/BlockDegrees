@@ -72,51 +72,6 @@ function Features() {
     setError("");
   };
 
-  const generateMetadata = () => {
-    const metadata = {
-      name: `Bachelor of Science in ${formData.department} - ${formData.studentName}`,
-      description: `This certifies that ${formData.studentName}, with Matriculation Number ${formData.matricNumber}, has successfully completed the prescribed course of study in ${formData.department} under the Faculty of ${formData.faculty} at Veritas University, Abuja, and has been duly awarded the degree of Bachelor of Science (B.Sc.) in accordance with the university's regulations. Congratulations on this academic achievement!`,
-      image:
-        "https://ipfs.io/ipfs/bafybeibukfbp4iqdc6la4zzkwrnblbkupbx4vzuqa3rgnokkrhdv6g7uji",
-      attributes: [
-        {
-          trait_type: "Degree Type",
-          value: "Undergraduate",
-        },
-        {
-          trait_type: "Student Name",
-          value: formData.studentName,
-        },
-        {
-          trait_type: "Matric Number",
-          value: formData.matricNumber,
-        },
-        {
-          trait_type: "Grade",
-          value: formData.grade,
-        },
-        {
-          trait_type: "Department",
-          value: formData.department,
-        },
-        {
-          trait_type: "Faculty",
-          value: formData.faculty,
-        },
-        {
-          trait_type: "Issue Date",
-          value: formData.issueDate,
-        },
-        {
-          trait_type: "Year",
-          value: formData.year,
-        },
-      ],
-    };
-
-    return JSON.stringify(metadata);
-  };
-
   const handleRevoke = async (e) => {
     e.preventDefault();
     setError("");
@@ -168,6 +123,55 @@ function Features() {
     setIsLoading(true);
 
     try {
+      // Generate metadata object
+      const metadata = {
+        name: `Bachelor of Science in ${formData.department} - ${formData.studentName}`,
+        description: `This certifies that ${formData.studentName}, with Matriculation Number ${formData.matricNumber}, has successfully completed the prescribed course of study in ${formData.department} under the Faculty of ${formData.faculty} at Veritas University, Abuja, and has been duly awarded the degree of Bachelor of Science (B.Sc.) in accordance with the university's regulations. Congratulations on this academic achievement!`,
+        image:
+          "https://ipfs.io/ipfs/bafybeibukfbp4iqdc6la4zzkwrnblbkupbx4vzuqa3rgnokkrhdv6g7uji",
+        attributes: [
+          {
+            trait_type: "Degree Type",
+            value: "Undergraduate",
+          },
+          {
+            trait_type: "Student Name",
+            value: formData.studentName,
+          },
+          {
+            trait_type: "Matric Number",
+            value: formData.matricNumber,
+          },
+          {
+            trait_type: "Grade",
+            value: formData.grade,
+          },
+          {
+            trait_type: "Department",
+            value: formData.department,
+          },
+          {
+            trait_type: "Faculty",
+            value: formData.faculty,
+          },
+          {
+            trait_type: "Issue Date",
+            value: formData.issueDate,
+          },
+          {
+            trait_type: "Year",
+            value: formData.year,
+          },
+        ],
+      };
+
+      // Convert metadata to URI format
+      const metadataUri = `data:application/json;base64,${btoa(
+        JSON.stringify(metadata)
+      )}`;
+      console.log("Metadata URI:", metadataUri);
+
+      // Get contract instance
       const { signer } = await walletService.connectMetaMask();
 
       if (!signer) {
@@ -176,11 +180,6 @@ function Features() {
         );
       }
 
-      const metadata = generateMetadata();
-      // Here you would typically upload the metadata to IPFS first
-      // and use the returned IPFS hash as the metadata URI
-      const metadataUri = "ipfs://YOUR_IPFS_HASH"; // Replace with actual IPFS upload
-
       const contract = await walletService.getContract(
         CONTRACT_ADDRESS,
         DegreeToken
@@ -188,10 +187,11 @@ function Features() {
 
       console.log("Contract instance created:", contract);
 
+      // Call the contract's issueDegree function with the metadata URI
       const tx = await contract.issueDegree(
         formData.address,
         formData.tokenId,
-        metadataUri
+        metadataUri // Pass the metadata URI directly
       );
 
       console.log("Transaction sent:", tx);
