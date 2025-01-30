@@ -73,7 +73,9 @@
 
 .action-buttons {
   display: flex;
-  gap: 1.5rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   margin-top: 2rem;
 }
 
@@ -285,4 +287,60 @@
 .view-button:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.connect-wallet-btn {
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(to top, #A259FF, #613599);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.connect-wallet-btn:hover {
+  background: linear-gradient(to top, #613599, #A259FF);
+  transform: translateY(-2px);
+}
+
+.connect-wallet-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.wallet-info {
+  padding: 0.5rem 1rem;
+  background: rgba(162, 89, 255, 0.1);
+  border-radius: 0.5rem;
+  color: #A259FF;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+.error-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4444;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }

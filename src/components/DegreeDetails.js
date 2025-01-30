@@ -3,8 +3,7 @@ import { useParams } from 'react-router-dom';
 import { FaGlobe } from 'react-icons/fa';
 import '../styles/DegreeDetails.css';
 import { BrowserProvider, Contract } from 'ethers';
-import DegreeToken from '../abi/anything.json';
-
+import DegreeToken from "../abi/degree.json";
 function DegreeDetails() {
   const { tokenId } = useParams();
   const [timeLeft, setTimeLeft] = useState({
@@ -42,7 +41,7 @@ function DegreeDetails() {
         const signer = await provider.getSigner();
 
         // Create contract instance
-        const contractAddress = 'YOUR_CONTRACT_ADDRESS'; // Replace with your contract address
+        const contractAddress = '0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90'; // Replace with your contract address
         const contract = new Contract(contractAddress, DegreeToken.abi, signer);
 
         // Fetch degree metadata
