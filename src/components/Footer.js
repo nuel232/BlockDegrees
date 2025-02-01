@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaCube, FaFacebook, FaLinkedin, FaTwitter, FaInstagram,FaGraduationCap } from 'react-icons/fa';
+import { FaFacebook, FaLinkedin, FaTwitter, FaInstagram,FaGraduationCap } from 'react-icons/fa';
 import '../styles/Footer.css';
 
 function Footer() {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../styles/Testimonials.css";
 
+// Sample data for testimonials
 const testimonials = [
   {
     id: 1,

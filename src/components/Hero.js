@@ -298,7 +298,7 @@ function Hero() {
                   <button
                     onClick={() => {
                       setVerificationResult(null);
-                      setError("");
+                      setError(""); 
                     }}
                     className="verify-another-btn"
                   >

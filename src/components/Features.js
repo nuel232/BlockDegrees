@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   FaLink,
   FaCheckCircle,
@@ -71,6 +71,47 @@ function Features() {
     },
   ];
 
+  const issueModalRef = useRef(null);
+  const revokeModalRef = useRef(null);
+  const transcriptModalRef = useRef(null);
+
+  // Close modal on outside click and manage body scroll
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (issueModalRef.current && !issueModalRef.current.contains(event.target)  &&
+      event.target.classList.contains('modal')) {
+        setShowIssueModal(false);
+      }
+      if (revokeModalRef.current && !revokeModalRef.current.contains(event.target)) {
+        setShowRevokeModal(false);
+      }
+      if (transcriptModalRef.current && !transcriptModalRef.current.contains(event.target)) {
+        setShowTranscriptModal(false);
+      }
+    };
+
+    const handleBodyScroll = (e) => {
+      if (!e.target.closest('.modal-content')) {
+        e.preventDefault();
+      }
+    };
+  
+    if (showIssueModal || showRevokeModal || showTranscriptModal) {
+      document.body.classList.add("modal-open");
+      document.addEventListener("mousedown", handleClickOutside);
+      // Only prevent scrolling on the background
+      document.body.addEventListener("wheel", handleBodyScroll, { passive: false });
+      document.body.addEventListener("touchmove", handleBodyScroll, { passive: false });
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+  
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.removeEventListener("wheel", handleBodyScroll);
+      document.body.removeEventListener("touchmove", handleBodyScroll);
+    };
+  }, [showIssueModal, showRevokeModal, showTranscriptModal]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -354,7 +395,7 @@ function Features() {
 
       {showIssueModal && (
         <div className="modal">
-          <div className="modal-content">
+          <div className="modal-content" ref={issueModalRef}>
             <button
               className="close-button"
               onClick={() => setShowIssueModal(false)}
@@ -483,7 +524,7 @@ function Features() {
 
       {showRevokeModal && (
         <div className="modal">
-          <div className="modal-content">
+          <div className="modal-content" ref={revokeModalRef}>
             <button
               className="close-button"
               onClick={() => setShowRevokeModal(false)}
@@ -523,7 +564,7 @@ function Features() {
 
       {showTranscriptModal && (
         <div className="modal">
-          <div className="modal-content">
+          <div className="modal-content" ref={transcriptModalRef}>
             <button
               className="close-button"
               onClick={() => setShowTranscriptModal(false)}
