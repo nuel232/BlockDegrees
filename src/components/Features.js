@@ -5,6 +5,7 @@ import {
   FaGlobe,
   FaGraduationCap,
   FaTimes,
+  FaFileUpload,
 } from "react-icons/fa";
 import { walletService } from "../services/WalletService";
 import DegreeToken from "../abi/degree.json";
@@ -14,6 +15,11 @@ function Features() {
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [showRevokeModal, setShowRevokeModal] = useState(false);
   const [showTranscriptModal, setShowTranscriptModal] = useState(false);
+  const [showBatchIssueModal, setShowBatchIssueModal] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [batchError, setBatchError] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCount, setProcessedCount] = useState(0);
   const [formData, setFormData] = useState({
     address: "",
     tokenId: "",
@@ -29,7 +35,7 @@ function Features() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const CONTRACT_ADDRESS = "0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90";
+  const CONTRACT_ADDRESS = "0x18B700395ae2DE3742D9f997D4cAF28ebf302a93";
   const features = [
     {
       title: "Blockchain-Powered Degrees",
@@ -69,11 +75,18 @@ function Features() {
       Icon: FaGraduationCap,
       onClick: () => setShowRevokeModal(true),
     },
+    {
+      title: "Batch Issue Degrees",
+      description: "Issue multiple degrees at once using CSV upload",
+      Icon: FaFileUpload,
+      onClick: () => setShowBatchIssueModal(true),
+    },
   ];
 
   const issueModalRef = useRef(null);
   const revokeModalRef = useRef(null);
   const transcriptModalRef = useRef(null);
+  const batchModalRef = useRef(null);
 
   // Close modal on outside click and manage body scroll
   useEffect(() => {
@@ -88,6 +101,9 @@ function Features() {
       if (transcriptModalRef.current && !transcriptModalRef.current.contains(event.target)) {
         setShowTranscriptModal(false);
       }
+      if (batchModalRef.current && !batchModalRef.current.contains(event.target)) {
+        setShowBatchIssueModal(false);
+      }
     };
 
     const handleBodyScroll = (e) => {
@@ -96,7 +112,7 @@ function Features() {
       }
     };
   
-    if (showIssueModal || showRevokeModal || showTranscriptModal) {
+    if (showIssueModal || showRevokeModal || showTranscriptModal || showBatchIssueModal) {
       document.body.classList.add("modal-open");
       document.addEventListener("mousedown", handleClickOutside);
       // Only prevent scrolling on the background
@@ -111,7 +127,7 @@ function Features() {
       document.body.removeEventListener("wheel", handleBodyScroll);
       document.body.removeEventListener("touchmove", handleBodyScroll);
     };
-  }, [showIssueModal, showRevokeModal, showTranscriptModal]);
+  }, [showIssueModal, showRevokeModal, showTranscriptModal, showBatchIssueModal]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -369,6 +385,84 @@ function Features() {
       setError(err.message || "Failed to issue degree. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCsvUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const text = e.target.result;
+          const rows = text.split('\n').filter(row => row.trim());
+          const headers = rows[0].split(',');
+          const degrees = rows.slice(1).map(row => {
+            const values = row.split(',');
+            return headers.reduce((obj, header, index) => {
+              obj[header.trim()] = values[index]?.trim();
+              return obj;
+            }, {});
+          });
+          setCsvFile(degrees);
+          setBatchError("");
+        } catch (error) {
+          setBatchError("Error processing CSV file");
+          console.error(error);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleBatchIssuance = async () => {
+    if (!csvFile || csvFile.length === 0) {
+      setBatchError("Please upload a valid CSV file");
+      return;
+    }
+
+    setIsProcessing(true);
+    setProcessedCount(0);
+    setBatchError("");
+
+    try {
+      const contract = await walletService.getContract(CONTRACT_ADDRESS, DegreeToken);
+
+      for (const degree of csvFile) {
+        try {
+          const metadata = {
+            name: `Degree Certificate - ${degree.studentName}`,
+            description: `Official degree certificate for ${degree.studentName}`,
+            attributes: [
+              { trait_type: "Student Name", value: degree.studentName },
+              { trait_type: "Matric Number", value: degree.matricNumber },
+              { trait_type: "Grade", value: degree.grade },
+              { trait_type: "Department", value: degree.department },
+              { trait_type: "Faculty", value: degree.faculty },
+              { trait_type: "Issue Date", value: degree.issueDate },
+              { trait_type: "Year", value: degree.year }
+            ]
+          };
+
+          const metadataUri = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+          
+          const tx = await contract.issueDegree(
+            degree.walletAddress,
+            degree.tokenId,
+            metadataUri
+          );
+          await tx.wait();
+          setProcessedCount(prev => prev + 1);
+        } catch (error) {
+          console.error(`Error issuing degree for ${degree.studentName}:`, error);
+        }
+      }
+      setShowBatchIssueModal(false);
+    } catch (error) {
+      setBatchError("Error in batch processing");
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -672,6 +766,54 @@ function Features() {
                 {isLoading ? "Issuing..." : "Issue Transcript"}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showBatchIssueModal && (
+        <div className="modal">
+          <div className="modal-content" ref={batchModalRef}>
+            <button className="close-button" onClick={() => setShowBatchIssueModal(false)}>
+              <FaTimes />
+            </button>
+            <h2>Batch Issue Degrees</h2>
+            <p>Upload a CSV file containing degree information</p>
+
+            <div className="batch-upload-container">
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleCsvUpload}
+                className="file-input"
+              />
+              
+              {csvFile && (
+                <div className="batch-summary">
+                  <p>Records to process: {csvFile.length}</p>
+                  {isProcessing && (
+                    <div className="processing-status">
+                      <p>Processing... {processedCount}/{csvFile.length}</p>
+                      <div className="progress-bar">
+                        <div 
+                          className="progress" 
+                          style={{width: `${(processedCount/csvFile.length) * 100}%`}}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {batchError && <div className="error-message">{batchError}</div>}
+
+              <button
+                className="submit-button"
+                onClick={handleBatchIssuance}
+                disabled={!csvFile || isProcessing}
+              >
+                {isProcessing ? "Processing..." : "Issue Degrees"}
+              </button>
+            </div>
           </div>
         </div>
       )}
