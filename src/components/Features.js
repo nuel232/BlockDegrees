@@ -34,6 +34,8 @@ function Features() {
   const [revokeTokenId, setRevokeTokenId] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const CONTRACT_ADDRESS = "0x18B700395ae2DE3742D9f997D4cAF28ebf302a93";
   const features = [
@@ -223,7 +225,7 @@ function Features() {
         year: "",
       });
 
-      alert("Transcript issued successfully!");
+      showSuccess("Transcript issued successfully!");
     } catch (err) {
       console.error("Error issuing transcript:", err);
       if (err.code === "ACTION_REJECTED") {
@@ -270,7 +272,7 @@ function Features() {
 
       setShowRevokeModal(false);
       setRevokeTokenId("");
-      alert("Degree revoked successfully!");
+      showSuccess("Degree revoked successfully!");
     } catch (err) {
       console.error("Error revoking degree:", err);
       if (err.code === "ACTION_REJECTED") {
@@ -379,7 +381,7 @@ function Features() {
         year: "",
       });
 
-      alert("Degree issued successfully!");
+      showSuccess("Degree issued successfully!");
     } catch (err) {
       console.error("Error issuing degree:", err);
       setError(err.message || "Failed to issue degree. Please try again.");
@@ -463,7 +465,21 @@ function Features() {
       console.error(error);
     } finally {
       setIsProcessing(false);
+      if (processedCount > 0) {
+        showSuccess(`Successfully issued ${processedCount} degrees`);
+        setShowBatchIssueModal(false);
+        setCsvFile(null);
+        setProcessedCount(0);
+      }
     }
+  };
+
+  const showSuccess = (message) => {
+    setSuccessMessage(message);
+    setShowSuccessAnimation(true);
+    setTimeout(() => {
+      setShowSuccessAnimation(false);
+    }, 2000);
   };
 
   return (
@@ -566,17 +582,6 @@ function Features() {
                   value={formData.department}
                   onChange={handleInputChange}
                   placeholder="Department"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="faculty"
-                  value={formData.faculty}
-                  onChange={handleInputChange}
-                  placeholder="Faculty"
                   required
                 />
               </div>
@@ -815,6 +820,14 @@ function Features() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {showSuccessAnimation && (
+        <div className="success-animation">
+          <div className="success-icon">
+            <FaCheckCircle size={40} color="#FFFFFF" />
+          </div>
+          <div className="success-message">{successMessage}</div>
         </div>
       )}
     </section>
