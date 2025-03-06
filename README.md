@@ -8,8 +8,11 @@ BlockDegrees is a web application that leverages blockchain technology to provid
 - [How It Works](#how-it-works)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Technologies Used](#technologies-used)
 - [Contributing](#contributing)
 - [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ## Features
 
@@ -52,6 +55,76 @@ To get started with BlockDegrees, follow these steps:
 ## Usage
 
 Once the server is running, open your browser and navigate to `http://localhost:3000` to view the application. You can explore the features, read testimonials, and learn more about how BlockDegrees works.
+
+## Project Structure
+
+The project structure is as follows:
+
+```
+research_seminar/
+├── NFT-Ceritificate/
+│   ├── contracts/
+│   │   └── degree.sol
+│   ├── ignition/
+│   │   └── modules/
+│   │       └── Lock.js
+│   ├── test/
+│   │   └── Lock.js
+│   ├── .gitignore
+│   ├── hardhat.config.js
+│   ├── package.json
+│   └── README.md
+├── public/
+│   ├── index.html
+│   ├── manifest.json
+│   └── robots.txt
+├── src/
+│   ├── abi/
+│   │   └── degree.json
+│   ├── components/
+│   │   ├── DegreeDetails.js
+│   │   ├── Features.js
+│   │   ├── Footer.js
+│   │   ├── Hero.js
+│   │   ├── HowItWorks.js
+│   │   ├── Navbar.js
+│   │   ├── Testimonials.js
+│   │   └── VerifyCertificateModal.js
+│   ├── styles/
+│   │   ├── DegreeDetails.css
+│   │   ├── Features.css
+│   │   ├── Footer.css
+│   │   ├── Hero.css
+│   │   ├── HowItWorks.css
+│   │   ├── Navbar.css
+│   │   ├── Testimonials.css
+│   ├── App.css
+│   ├── App.js
+│   ├── App.test.js
+│   ├── index.css
+│   ├── index.js
+│   ├── reportWebVitals.js
+│   ├── server.js
+│   ├── services/
+│   │   └── WalletService.js
+│   ├── setupTests.js
+├── .env
+├── .gitignore
+├── certificates.csv
+├── package.json
+├── project proposal.docx
+└── README.md
+```
+
+## Technologies Used
+
+- **Frontend**: React, CSS
+- **Backend**: Node.js, Express
+- **Blockchain**: Solidity, Hardhat, Ethers.js
+- **Smart Contracts**: OpenZeppelin ERC721
+- **Testing**: Hardhat, Chai
+- **Deployment**: Hardhat Ignition
+- **Wallet Integration**: MetaMask
 
 ## Contributing
 
