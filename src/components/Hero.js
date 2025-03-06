@@ -99,7 +99,7 @@ function Hero() {
       try {
         await contract.ownerOf(tokenId);
         const metadata = await contract.tokenURI(tokenId);
-        setVerificationResult(metadata);
+        setVerificationResult({ metadata, tokenId }); // Store tokenId with metadata
       } catch (contractError) {
         if (contractError.message.includes("ERC721NonexistentToken")) {
           setError(
@@ -290,7 +290,7 @@ function Hero() {
                 </div>
                 <div className="action-buttons">
                   <button
-                    onClick={() => navigate(`/degree/${tokenId}`)}
+                    onClick={() => navigate(`/degree/${verificationResult.tokenId}`)}
                     className="view-details-btn"
                   >
                     View Full Details

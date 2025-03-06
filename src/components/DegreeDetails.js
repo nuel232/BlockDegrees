@@ -31,7 +31,7 @@ function DegreeDetails() {
         const contractInterface = new Interface(contractABI);
 
         const contract = new Contract(
-          "0x70dFeB66b08625d7aEac0C16D3e1EDd389247f90",
+          "0x18B700395ae2DE3742D9f997D4cAF28ebf302a93",
           contractInterface,
           provider
         );
