@@ -10,6 +10,7 @@ import {
 import { walletService } from "../services/WalletService";
 import DegreeToken from "../abi/degree.json";
 import "../styles/Features.css";
+import axios from "axios";
 
 function Features() {
   const [showIssueModal, setShowIssueModal] = useState(false);
@@ -180,11 +181,48 @@ function Features() {
         ],
       };
 
-      // Convert metadata to URI format
-      const metadataUri = `data:application/json;base64,${btoa(
-        JSON.stringify(metadata)
-      )}`;
-      console.log("Transcript Metadata URI:", metadataUri);
+      // Upload metadata to IPFS using Pinata
+      let metadataUri;
+      try {
+        console.log("Uploading transcript metadata to IPFS...");
+        const pinataOptions = {
+          pinataMetadata: {
+            name: `Transcript_${formData.tokenId}_${formData.studentName}`,
+            keyvalues: {
+              tokenId: formData.tokenId,
+              studentName: formData.studentName,
+              documentType: "transcript"
+            }
+          }
+        };
+        
+        const finalData = {
+          pinataOptions: pinataOptions,
+          pinataContent: metadata
+        };
+        
+        const response = await axios({
+          method: 'post',
+          url: 'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'pinata_api_key': process.env.REACT_APP_PINATA_API_KEY, 
+            'pinata_secret_api_key': process.env.REACT_APP_PINATA_API_SECRET
+          },
+          data: finalData
+        });
+        console.log("IPFS upload response:", response.data);
+        const ipfsHash = response.data.IpfsHash;
+        metadataUri = `ipfs://${ipfsHash}`;
+        console.log("Transcript metadata uploaded to IPFS:", metadataUri);
+      } catch (ipfsError) {
+        console.error("IPFS upload failed:", ipfsError);
+        // Fall back to base64 encoding if IPFS upload fails
+        metadataUri = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+        console.log("Falling back to base64 metadata URI");
+      }
+      
+      console.log("Final Transcript Metadata URI:", metadataUri);
 
       // Get contract instance
       const { signer } = await walletService.connectMetaMask();
@@ -335,11 +373,48 @@ function Features() {
         ],
       };
 
-      // Convert metadata to URI format
-      const metadataUri = `data:application/json;base64,${btoa(
-        JSON.stringify(metadata)
-      )}`;
-      console.log("Metadata URI:", metadataUri);
+      // Upload metadata to IPFS using Pinata
+      let metadataUri;
+      try {
+        console.log("Uploading metadata to IPFS...");
+        const pinataOptions = {
+          pinataMetadata: {
+            name: `Degree_${formData.tokenId}_${formData.studentName}`,
+            keyvalues: {
+              tokenId: formData.tokenId,
+              studentName: formData.studentName,
+              department: formData.department
+            }
+          }
+        };
+        
+        const finalData = {
+          pinataOptions: pinataOptions,
+          pinataContent: metadata
+        };
+        
+        const response = await axios({
+          method: 'post',
+          url: 'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+          headers: { 
+            'Content-Type': 'application/json', 
+            'pinata_api_key': process.env.REACT_APP_PINATA_API_KEY, 
+            'pinata_secret_api_key': process.env.REACT_APP_PINATA_API_SECRET
+          },
+          data: finalData
+        });
+        console.log("IPFS upload response:", response.data);
+        const ipfsHash = response.data.IpfsHash;
+        metadataUri = `ipfs://${ipfsHash}`;
+        console.log("Metadata uploaded to IPFS:", metadataUri);
+      } catch (ipfsError) {
+        console.error("IPFS upload failed:", ipfsError);
+        // Fall back to base64 encoding if IPFS upload fails
+        metadataUri = `data:application/json;base64,${btoa(JSON.stringify(metadata))}`;
+        console.log("Falling back to base64 metadata URI");
+      }
+      
+      console.log("Final Metadata URI:", metadataUri);
 
       // Get contract instance
       const { signer } = await walletService.connectMetaMask();
