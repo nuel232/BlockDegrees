@@ -1,10 +1,10 @@
 import { BrowserProvider, Contract, Interface } from "ethers";
-
+//singleton service class for wallet collection 
 class WalletService {
   constructor() {
-    this.provider = null;
-    this.signer = null;
-    this.address = null;
+    this.provider = null; //blockchain provider
+    this.signer = null; //wallet signer
+    this.address = null; //wallet address
   }
 
   checkMetaMask() {
@@ -14,6 +14,7 @@ class WalletService {
     return true;
   }
 
+  
   async connectMetaMask() {
     try {
       this.checkMetaMask();
