@@ -92,8 +92,32 @@ function DegreeDetails() {
   if (isLoading) {
     return (
       <div className="degree-details loading">
-        <div className="loading-spinner"></div>
-        <p>Loading degree details...</p>
+        <div className="loading-container">
+          <div className="loading-spinner">
+            <div className="loading-spinner-inner"></div>
+          </div>
+          <h2>Loading Degree Details</h2>
+          <p>Please wait while we verify your certificate on the blockchain...</p>
+          
+          <div className="loading-steps">
+            <div className="loading-step active">
+              <div className="step-icon">1</div>
+              <div className="step-text">Connecting to blockchain network</div>
+            </div>
+            <div className="loading-step">
+              <div className="step-icon">2</div>
+              <div className="step-text">Verifying certificate ownership</div>
+            </div>
+            <div className="loading-step">
+              <div className="step-icon">3</div>
+              <div className="step-text">Retrieving certificate metadata</div>
+            </div>
+            <div className="loading-step">
+              <div className="step-icon">4</div>
+              <div className="step-text">Loading certificate details</div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

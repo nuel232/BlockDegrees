@@ -558,7 +558,7 @@ function Features() {
   };
 
   return (
-    <section className="features">
+    <section id="features" className="features">
       <h2>Key Features</h2>
       <div className="features-grid">
         {features.map((feature, index) => {
